@@ -1,0 +1,97 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>  
+        <script type="application/javascript">  
+            function draw_border(ctx)
+            {
+                ctx.fillStyle = "rgb(0,0,0)";
+                ctx.fillRect(0,0,1024,768);
+            }
+            function main()
+            {
+                /*****************************************************
+                                  Variable initializations  
+                *****************************************************/
+                
+                /* Number of Rows/Cols for motes */ 
+                var rows = 4;
+                var columns = 5;
+    
+                /* Mote variables (Rectangles) */ 
+                /*var canvas = document.getElementById("canvas"); */
+                var ctx = canvas.getContext("2d");  
+                var mote_width = canvas.width/32;
+                var mote_height = canvas.height/32;
+                var x_spacing = canvas.width/7;
+                var y_spacing = canvas.height/6;
+                var x_offset = (canvas.width -
+                        (mote_width*columns)-(x_spacing*(columns-1)))/2;
+                var y_offset = (canvas.height -
+                        (mote_height*rows)-(y_spacing*(rows-1)))/2;
+                var mote_x;
+                var mote_y;
+    
+                /* BlinkM variables (Circle) */
+                var radius = 8;
+                var startAngle = 0;
+                var endAngle = 2*Math.PI;
+        
+                /*****************************************************
+                                       Implementation  
+                *****************************************************/
+    
+                /* Draw the border */ 
+             draw_border(ctx);
+ 
+                var mote_list = [];
+                var s = new WebSocket("ws://localhost:9876/");
+                s.onopen = function(e) { } //alert("opened"); }
+                s.onmessage = function(e) 
+                { 
+                    if(canvas.getContext)
+                    {
+                        x = e.data[0];
+                        y = e.data[1];
+                        r = e.data[2];
+                        g = e.data[3];
+                        b = e.data[4];
+                        
+                        /* Calculate X and Y locations */
+                        mote_x = x_offset+x*x_spacing + x*mote_width;
+                        mote_y = y_offset + y*y_spacing + y*mote_height;
+                        
+                        /* Draw Motes */
+                        ctx.fillStyle = "rgb(0,150,0)";  
+ 
+                        ctx.fillRect (mote_x, mote_y, mote_width, mote_height);  
+                        ctx.clearRect (mote_x+5,mote_y+5, mote_width -10,mote_height - 10);  
+
+                        /* Draw BlinkMs */ 
+                        ctx.beginPath();
+
+                        if(r == 1)
+                            r = 255;
+                        else
+                            r = 0;
+                        if(g == 1)
+                            g = 255;
+                        else
+                            g = 0;
+                        if(b == 1)
+                            b = 255;
+                        else
+                            b = 0;
+                        ctx.fillStyle = "rgb("+r+","+g+","+b+")";
+                        
+                        ctx.arc(mote_x + mote_width, mote_y + mote_height,radius, startAngle, endAngle, true);
+                        ctx.fill();
+                    }
+                }
+                s.onclose = function(e) { alert("closed"); }   
+             }    
+             
+</script>  
+ </head>  
+ <body onload="main();">  
+     <canvas id="canvas" width="1024" height="768"></canvas>  
+ </body>  
+</html> 
